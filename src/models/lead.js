@@ -27,6 +27,19 @@ export const LEAD_STATUSES = [
   'rejected'
 ]
 
+const SERVICE_TYPE_ALIASES = {
+  lawn: 'mowing',
+  lawn_service: 'mowing',
+  grass_cutting: 'mowing',
+  grass_cut: 'mowing',
+  cemetery_cleaning: 'graveyard_cleaning',
+  grave_cleaning: 'graveyard_cleaning',
+  lot_cleaning: 'lot_maintenance',
+  land_maintenance: 'lot_maintenance',
+  design: 'banner_design',
+  video: 'video_editing'
+}
+
 export function createLeadDocument(input = {}) {
   const now = new Date().toISOString()
 
@@ -66,7 +79,13 @@ export function updateLeadDocument(currentLead, changes) {
 }
 
 export function getServiceLabel(serviceType) {
-  return SERVICE_TYPES.find((option) => option.value === serviceType)?.label || 'Other'
+  const normalizedServiceType = normalizeServiceType(serviceType)
+  return SERVICE_TYPES.find((option) => option.value === normalizedServiceType)?.label || 'Other'
+}
+
+export function normalizeServiceType(serviceType) {
+  const normalized = String(serviceType || '').toLowerCase().replace(/[\s-]+/g, '_')
+  return SERVICE_TYPE_ALIASES[normalized] || normalized || 'other'
 }
 
 export function generateReplyDraft(lead) {

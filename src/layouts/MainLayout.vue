@@ -10,6 +10,9 @@
           aria-label="Open navigation"
           @click="drawerOpen = !drawerOpen"
         />
+        <q-avatar square size="36px" class="app-logo q-ml-sm">
+          <img src="/eds-logo.png" alt="E.D.S. logo" />
+        </q-avatar>
         <q-toolbar-title>E.D.S. Lead Management</q-toolbar-title>
       </q-toolbar>
     </q-header>

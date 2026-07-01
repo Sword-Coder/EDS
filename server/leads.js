@@ -142,8 +142,8 @@ function sanitizeLeadInput(input = {}) {
     phoneNumber: stringValue(input.phoneNumber),
     facebookName: stringValue(input.facebookName),
     location: stringValue(input.location),
-    serviceType: enumValue(input.serviceType, SERVICE_TYPES, 'mowing'),
-    inquirySource: enumValue(input.inquirySource, INQUIRY_SOURCES, 'Facebook'),
+    serviceType: normalizeServiceType(input.serviceType),
+    inquirySource: normalizeInquirySource(input.inquirySource),
     inquiryDate: stringValue(input.inquiryDate) || todayForInput(),
     description: stringValue(input.description),
     lotSize: stringValue(input.lotSize),
@@ -176,6 +176,41 @@ function stringValue(value) {
 
 function enumValue(value, allowedValues, fallback) {
   return allowedValues.has(value) ? value : fallback
+}
+
+function normalizeServiceType(value) {
+  const normalized = stringValue(value).toLowerCase().replace(/[\s-]+/g, '_')
+
+  const aliases = {
+    lawn: 'mowing',
+    lawn_service: 'mowing',
+    grass_cutting: 'mowing',
+    grass_cut: 'mowing',
+    cemetery_cleaning: 'graveyard_cleaning',
+    grave_cleaning: 'graveyard_cleaning',
+    lot_cleaning: 'lot_maintenance',
+    land_maintenance: 'lot_maintenance',
+    design: 'banner_design',
+    video: 'video_editing'
+  }
+
+  return enumValue(aliases[normalized] || normalized, SERVICE_TYPES, 'other')
+}
+
+function normalizeInquirySource(value) {
+  const source = stringValue(value)
+  const normalized = source.toLowerCase().replace(/[\s-]+/g, '_')
+
+  const aliases = {
+    fb: 'Facebook',
+    facebook: 'Facebook',
+    messenger: 'Messenger',
+    n8n: 'other',
+    n8n_webhook: 'other',
+    webhook: 'other'
+  }
+
+  return enumValue(aliases[normalized] || source, INQUIRY_SOURCES, 'other')
 }
 
 function numberOrNull(value) {

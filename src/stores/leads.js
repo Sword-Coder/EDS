@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { generateReplyDraft } from '../models/lead'
+import { generateReplyDraft, normalizeServiceType } from '../models/lead'
 
 export const useLeadsStore = defineStore('leads', {
   state: () => ({
@@ -14,7 +14,9 @@ export const useLeadsStore = defineStore('leads', {
     filteredLeads(state) {
       return state.leads
         .filter((lead) => state.statusFilter === 'all' || lead.status === state.statusFilter)
-        .filter((lead) => state.serviceTypeFilter === 'all' || lead.serviceType === state.serviceTypeFilter)
+        .filter((lead) => {
+          return state.serviceTypeFilter === 'all' || normalizeServiceType(lead.serviceType) === state.serviceTypeFilter
+        })
         .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
     },
 
