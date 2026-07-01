@@ -6,8 +6,6 @@
   "scripts": {
     "dev": "quasar dev",
     "build": "quasar build",
-    "dev:vite": "vite --host 0.0.0.0",
-    "build:vite": "vite build",
     "preview": "quasar serve dist/spa --host 0.0.0.0"
   },
   "dependencies": {
