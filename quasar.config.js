@@ -10,7 +10,13 @@ export default configure(() => ({
   },
 
   devServer: {
-    open: false
+    open: false,
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:3306',
+        changeOrigin: true
+      }
+    }
   },
 
   framework: {

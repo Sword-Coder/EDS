@@ -11,6 +11,10 @@
       </header>
 
       <q-card class="work-surface">
+        <q-banner v-if="leadsStore.error" class="bg-red-1 text-red-10">
+          {{ leadsStore.error }}
+        </q-banner>
+
         <q-card-section>
           <div class="toolbar-row">
             <q-select
@@ -296,24 +300,32 @@ function openEditDialog(lead) {
   formDialogOpen.value = true
 }
 
-function saveLead() {
-  if (editingLeadId.value) {
-    leadsStore.updateLead(editingLeadId.value, form.value)
-  } else {
-    leadsStore.addLead(form.value)
-  }
+async function saveLead() {
+  try {
+    if (editingLeadId.value) {
+      await leadsStore.updateLead(editingLeadId.value, form.value)
+    } else {
+      await leadsStore.addLead(form.value)
+    }
 
-  formDialogOpen.value = false
+    formDialogOpen.value = false
+  } catch (error) {
+    $q.notify({ type: 'negative', message: leadsStore.error || 'Could not save lead.' })
+  }
 }
 
 function confirmDelete(lead) {
   $q.dialog({
     title: 'Delete lead?',
-    message: `This will remove ${lead.customerName || 'this lead'} from the local MVP data.`,
+    message: `This will remove ${lead.customerName || 'this lead'} from the lead database.`,
     cancel: true,
     persistent: true
-  }).onOk(() => {
-    leadsStore.deleteLead(lead._id)
+  }).onOk(async () => {
+    try {
+      await leadsStore.deleteLead(lead._id)
+    } catch (error) {
+      $q.notify({ type: 'negative', message: leadsStore.error || 'Could not delete lead.' })
+    }
   })
 }
 

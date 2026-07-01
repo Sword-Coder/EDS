@@ -1,11 +1,5 @@
 import { defineStore } from 'pinia'
-import {
-  createLeadDocument,
-  updateLeadDocument,
-  generateReplyDraft
-} from '../models/lead'
-
-const STORAGE_KEY = 'eds.leads.v1'
+import { generateReplyDraft } from '../models/lead'
 
 export const useLeadsStore = defineStore('leads', {
   state: () => ({
@@ -44,37 +38,78 @@ export const useLeadsStore = defineStore('leads', {
   },
 
   actions: {
-    loadLeads() {
+    async loadLeads() {
       this.loading = true
       this.error = null
 
       try {
-        const rawLeads = localStorage.getItem(STORAGE_KEY)
-        this.leads = rawLeads ? JSON.parse(rawLeads) : []
+        this.leads = await apiRequest('/api/leads')
       } catch (error) {
-        this.error = 'Could not load saved leads.'
+        this.error = error.message || 'Could not load saved leads.'
       } finally {
         this.loading = false
       }
     },
 
-    addLead(input) {
-      const lead = createLeadDocument(input)
-      this.leads = [lead, ...this.leads]
-      this.persist()
-      return lead
+    async addLead(input) {
+      this.loading = true
+      this.error = null
+
+      try {
+        const lead = await apiRequest('/api/leads', {
+          method: 'POST',
+          body: JSON.stringify(input)
+        })
+
+        this.leads = [lead, ...this.leads]
+        return lead
+      } catch (error) {
+        this.error = error.message || 'Could not save lead.'
+        throw error
+      } finally {
+        this.loading = false
+      }
     },
 
-    updateLead(id, changes) {
-      this.leads = this.leads.map((lead) => {
-        return lead._id === id ? updateLeadDocument(lead, changes) : lead
-      })
-      this.persist()
+    async updateLead(id, changes) {
+      this.loading = true
+      this.error = null
+
+      try {
+        const updatedLead = await apiRequest(`/api/leads/${encodeURIComponent(id)}`, {
+          method: 'PUT',
+          body: JSON.stringify(changes)
+        })
+
+        this.leads = this.leads.map((lead) => {
+          return lead._id === id ? updatedLead : lead
+        })
+
+        return updatedLead
+      } catch (error) {
+        this.error = error.message || 'Could not update lead.'
+        throw error
+      } finally {
+        this.loading = false
+      }
     },
 
-    deleteLead(id) {
-      this.leads = this.leads.filter((lead) => lead._id !== id)
-      this.persist()
+    async deleteLead(id) {
+      this.loading = true
+      this.error = null
+
+      try {
+        await apiRequest(`/api/leads/${encodeURIComponent(id)}`, {
+          method: 'DELETE'
+        })
+
+        this.leads = this.leads.filter((lead) => lead._id !== id)
+      } catch (error) {
+        this.error = error.message || 'Could not delete lead.'
+        throw error
+      } finally {
+        this.loading = false
+      }
     },
 
     setStatusFilter(status) {
@@ -87,14 +122,27 @@ export const useLeadsStore = defineStore('leads', {
 
     makeReplyDraft(lead) {
       return generateReplyDraft(lead)
-    },
-
-    persist() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.leads))
-      } catch (error) {
-        this.error = 'Could not save leads on this device.'
-      }
     }
   }
 })
+
+async function apiRequest(url, options = {}) {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options.headers || {})
+    }
+  })
+
+  const contentType = response.headers.get('content-type') || ''
+  const payload = contentType.includes('application/json')
+    ? await response.json()
+    : null
+
+  if (!response.ok) {
+    throw new Error(payload?.error || `Request failed with status ${response.status}`)
+  }
+
+  return payload
+}

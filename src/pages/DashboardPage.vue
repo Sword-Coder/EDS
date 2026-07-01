@@ -6,6 +6,10 @@
         <p class="page-subtitle">A quick view of lead activity and estimated value.</p>
       </header>
 
+      <q-banner v-if="leadsStore.error" class="q-mt-lg bg-red-1 text-red-10">
+        {{ leadsStore.error }}
+      </q-banner>
+
       <div class="summary-grid">
         <q-card v-for="card in cards" :key="card.label" class="summary-card">
           <q-card-section>

@@ -5,13 +5,19 @@
   "type": "module",
   "scripts": {
     "dev": "quasar dev",
+    "dev:api": "node server.js",
+    "dev:full": "concurrently \"npm run dev:api\" \"quasar dev\"",
     "build": "quasar build",
+    "start": "node server.js",
     "preview": "quasar serve dist/spa --host 0.0.0.0"
   },
   "dependencies": {
     "@quasar/extras": "^1.16.17",
     "@quasar/vite-plugin": "^1.7.0",
     "@vitejs/plugin-vue": "^5.2.4",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "nano": "^11.0.5",
     "pinia": "^2.3.1",
     "quasar": "^2.18.1",
     "vite": "^6.3.5",
@@ -20,6 +26,7 @@
   },
   "devDependencies": {
     "@quasar/app-vite": "2.3.0",
+    "concurrently": "^10.0.3",
     "sass-embedded": "^1.100.0"
   }
 }
